@@ -56,4 +56,4 @@ def AUC(test_labels, predicted_labels, n_classes):
     tpr["macro"] = mean_tpr
     roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
-    return roc_auc
+    return np.asarray(roc_auc)
