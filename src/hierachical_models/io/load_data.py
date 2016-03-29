@@ -6,13 +6,16 @@ import h5py
 import numpy as np
 import os
 
+
 Dataset=namedtuple("Dataset", ["data", "labels"])
+
 
 def readh5(filename, datalayer):
     file_id = h5py.File(filename, 'r')
     data = np.array(file_id[datalayer])
     labels = np.array(file_id['/label'])
     return Dataset(data,labels)
+
 
 def loadData(folder, layer):
     sources = 0

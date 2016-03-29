@@ -25,7 +25,6 @@ def main():
 
     clfs = {"log":linear_model.LogisticRegression(),
             "bayes":naive_bayes.GaussianNB()}
-
     tr = []
     te = []
     accuracy = {}
