@@ -14,9 +14,9 @@ def readh5(filename, datalayer):
     labels = np.array(file_id['/label'])
     return Dataset(data,labels)
 
-def loadData(folder):
+def loadData(folder, layer):
     sources = 0
-
+    name_of_sources = []
     #sort it alphabetically to know the order of the sources
     directories = os.listdir(folder)
     directories = sorted(directories)
@@ -35,27 +35,52 @@ def loadData(folder):
                     print '    ' + file
                     file = os.path.join(path_to_data, file)
                     if len(loaded_data) == 0:
-                        loaded_data = readh5(file, "ip1")
+                        loaded_data = readh5(file, layer)
                     else:
-                        new_data = readh5(file, "ip1")
+                        new_data = readh5(file, layer)
                         loaded_data = Dataset(np.concatenate((loaded_data.data,new_data.data)),np.concatenate((loaded_data.labels,new_data.labels)))
                 if kind_of_data == "training":
-                    tr["d"+str(sources)] = loaded_data
+                    tr[directory_name] = loaded_data
                 elif kind_of_data == "testing":
-                    te["d"+str(sources)] = loaded_data
+                    te[directory_name] = loaded_data
                 else:
                     print 'Error in loading!'
+        name_of_sources.append(directory_name)
         sources += 1
 
     combined_tr = []
     combined_te = []
-    for src_idx in range(sources):
+    src_idx = 0
+    for src in name_of_sources:
         if src_idx == 0:
-            combined_tr = tr['d'+str(src_idx)]
-            combined_te = te['d'+str(src_idx)]
+            combined_tr = tr[src]
+            combined_te = te[src]
         else:
-            combined_tr = Dataset(np.concatenate((combined_tr.data,tr['d'+str(src_idx)].data)),np.concatenate((combined_tr.labels,tr['d'+str(src_idx)].labels)))
-            combined_te = Dataset(np.concatenate((combined_te.data,te['d'+str(src_idx)].data)),np.concatenate((combined_te.labels,te['d'+str(src_idx)].labels)))
+            combined_tr = Dataset(np.concatenate((combined_tr.data,tr[src].data)),np.concatenate((combined_tr.labels,tr[src].labels)))
+            combined_te = Dataset(np.concatenate((combined_te.data,te[src].data)),np.concatenate((combined_te.labels,te[src].labels)))
+        src_idx += 1
+
     tr['combined'] = combined_tr
     te['combined'] = combined_te
-    return tr, te, sources
+    name_of_sources.append('combined')
+    return tr, te, name_of_sources
+
+def loadNetNames(folder):
+    directories = os.listdir(folder)
+    directories = sorted(directories)
+    net_structure = str()
+    nets = {}
+    for directory_name in directories:
+        if os.path.isdir(os.path.join(folder, directory_name)):
+            print directory_name
+            dir_path = os.path.join(folder, directory_name)
+
+            for net in os.listdir(dir_path):
+                print net
+                nets[directory_name] = os.path.join(dir_path, net)
+        else:
+            #found net structure
+            print 'Net structure '+directory_name
+            net_structure = os.path.join(folder, directory_name)
+
+    return net_structure, nets
